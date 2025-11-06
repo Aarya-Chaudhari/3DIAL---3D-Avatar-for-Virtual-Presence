@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3DIAL - Registration</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='styles.css')}}">
+    <style>
+        body{
+            height: auto;
+            padding: 2rem;
+        }
+    </style>
+
+</head>
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div id="flash-container">
+                {% for category, message in messages %}
+                    <div class="alert {{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="container">
+        <h2>Register</h2>
+        <form method="POST" action="/register">
+            <input type="text" id="name" name="f_name" placeholder="First Name" required>
+            <input type="text" id="name" name="l_name" placeholder="Last Name" required>
+            <input type="text" id="name" name="b_date" placeholder="DOB (YYYY-MM-DD)" required>
+            <input type="email" id="email" name="email" placeholder="Email" required>
+            <input type="text" id="name" name="username" placeholder="Username" required>
+            <input type="password" id="password" name="password" placeholder="Password" required>
+            <input type="password" id="password" name="confirm_pass" placeholder="Confirm Password" required>
+
+            <select id="theme" name="theme">
+                <option value="general" selected>General</option>
+                <option value="technology">Technology</option>
+                <option value="sports">Sports</option>
+                <option value="business">Business</option>
+                <option value="entertainment">Entertainment</option>
+                <option value="health">Health</option>
+                <option value="science">Science</option>
+                <option value="world">World</option>
+                <option value="politics">Politics</option>
+            </select>
+
+            <!-- CAPTCHA Image with an ID -->
+            <div>
+            <img id="captchaImage" src="/captcha_img" alt="CAPTCHA">
+            <!-- Reload Button -->
+            <button type="button" id="captcha" onclick="reloadCaptcha()" title="Reload">🔁</button>
+            </div>
+            <input type="text" name="captcha_input" placeholder="Enter CAPTCHA" required>
+                
+            <button type="submit">Register</button>
+        </form>
+        
+    <p>Already have an account? <a href="/login_page">Login</a></p>
+
+    </div>
+    <script src="{{ url_for('static',filename='script.js')}}"></script>
+</body>
+</html>

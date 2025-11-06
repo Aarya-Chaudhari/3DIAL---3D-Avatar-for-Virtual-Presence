@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3DIAL - Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='icon.jpg') }}">
+  <style>
+    .highlight {
+      position: relative;
+      z-index: 1000;
+      box-shadow: 0 0 20px 5px #00ffff;
+      transition: box-shadow 0.3s ease-in-out;
+    }
+
+    .tooltip {
+      position: absolute;
+      background: #222;
+      color: #fff;
+      padding: 10px 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #0ff;
+      z-index: 2000;
+      animation: fadeIn 0.4s ease;
+      max-width: 250px;
+      font-size: 14px;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0; transform: scale(0.9);}
+      to {opacity: 1; transform: scale(1);}
+    }
+
+    .tutorial-btn {
+      margin-top: 15px;
+      padding: 5px 12px;
+      background: #0ff;
+      color: #000;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1 class="neon-text">3DIAL - 3D Avatar for Virtual Presence</h1>
+    <div class="profile">
+      <img src="https://cdn-icons-png.flaticon.com/512/709/709722.png" alt="profile">
+      <span>Welcome, <strong>{{ username }}</strong></span>
+      <button id="logoutBtn" class="btn" onclick="document.location='/logout'">Logout</button>
+    </div>
+    <div id="profilePopup" class="profile-popup">
+      <img src="https://cdn-icons-png.flaticon.com/512/709/709722.png" alt="profile">
+  <h4>{{ username }}</h4>
+  <p>{{ email }}</p>
+</div>
+
+  </div>
+
+  <div class="main">
+    <div class="sidebar">
+      <h3>Options</h3>
+      <button id="createAvatarBtn" class="btn">CREATE MY AVATAR</button>
+      <button id="saveAvatarBtn" class="btn">SAVE MY AVATAR</button>
+      <button id="viewAvatarBtn" class="btn">VIEW MY AVATAR</button>
+      <button id="cloneVoiceBtn" class="btn">CLONE MY VOICE</button>
+      <button id="modifyVoiceBtn" class="btn">MODIFY CLONED VOICE</button>
+      <button id="viewClonedVoiceBtn" class="btn">VIEW CLONED VOICE</button>
+      <button id="presentationBtn" class="btn">CREATE A SHORT PRESENTATION</button>
+      <button id="EnableInteractiveAvatarBtn" class="btn">ENABLE INTERACTIVE AVATAR</button>
+      <button id="InteractWithAvatarBtn" class="btn">INTERACT WITH AVATAR</button>
+    </div>
+
+    <div class="content">
+      <div class="avatar-display" id="avatarDisplay">
+        [Your 3D Avatar will appear here]
+        <model-viewer id="avatarViewer" style="width:100%; height:500px; display:none;" auto-rotate camera-controls></model-viewer>
+      </div>
+
+      <div class="controls">
+        <div>
+          <button id="playBtn" class="btn">▶ Play</button>
+          <button id="pauseBtn" class="btn">⏸ Pause</button>
+          <button id="fullscreenBtn" class="btn">⛶ Fullscreen</button>
+        </div>
+        <div>
+          <button id="downloadBtn" class="btn">⬇ Download</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tutorialModal" style="display:flex; position:fixed; top:0; left:0; width:100%; height:100%;
+        background:rgba(0,0,0,0.6); justify-content:center; align-items:center;">
+    <div style="background:#111; padding:20px; border-radius:8px; text-align:center; color:#fff; max-width:400px;">
+      <h3>Do you want to see the tutorial?</h3>
+      <button id="tutorialYesBtn" class="btn">Yes</button>
+      <button id="tutorialNoBtn" class="btn">No</button>
+    </div>
+  </div>
+
+  <!-- 💬 3DIAL Chatbot Button -->
+<div id="chatbotContainer">
+  <div id="chatbotButton" title="Chat with 3DIAL">💬</div>
+
+  <div id="chatWindow">
+    <div id="chatHeader">3DIAL Assistant</div>
+    <div id="chatMessages"></div>
+    <div id="chatInputArea">
+      <input type="text" id="chatInput" placeholder="Ask 3DIAL..." />
+      <button id="sendBtn">➤</button>
+      <button id="voiceBtn"><i class="fa-solid fa-microphone"></i></button>
+    </div>
+  </div>
+</div>
+
+
+<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+
+<script>
+const tutorialSteps = [
+  { element: '#createAvatarBtn', text: 'Click here to create your 3D avatar from scratch!' },
+  { element: '#saveAvatarBtn', text: 'Save your created avatar for future use.' },
+  { element: '#viewAvatarBtn', text: 'Preview your generated avatar here anytime.' },
+  { element: '#cloneVoiceBtn', text: 'Clone your real voice for your avatar’s speech!' },
+  { element: '#viewClonedVoiceBtn', text: 'Listen to your cloned voice here.' },
+  { element: '#modifyVoiceBtn', text: 'Modify your cloned voice with various effects.' },
+  { element: '#avatarDisplay', text: 'Your 3D avatar will be displayed in this area.' },
+  { element: '#presentationBtn', text: 'Generate a short presentation with your avatar.' },
+  { element: '#EnableInteractiveAvatarBtn', text: 'Enable interactivity for your avatar here.' },
+  { element: '#InteractWithAvatarBtn', text: 'Interact with your avatar using voice commands.' },
+  { element: '#playBtn', text: 'Play your avatar animation here.' },
+  { element: '#pauseBtn', text: 'Pause the animation anytime.' },
+  { element: '#fullscreenBtn', text: 'View your avatar in fullscreen mode.' },
+  { element: '#downloadBtn', text: 'Download your final avatar or presentation.' },
+  { element: '#chatbotButton', text: 'Need help? Click here to chat with the 3DIAL assistant!' }
+];
+
+let currentStep = 0;
+let tooltipEl = null;
+let stepTimer = null;
+
+function startTutorial() {
+  document.getElementById('tutorialModal').style.display = 'none';
+  showStep();
+}
+
+function showStep() {
+  // Clean up previous tooltip
+  if (tooltipEl) tooltipEl.remove();
+  document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
+
+  
+
+  const { element, text } = tutorialSteps[currentStep];
+  const el = document.querySelector(element);
+  if (!el) return;
+
+  el.classList.add('highlight');
+
+  // Create tooltip
+  tooltipEl = document.createElement('div');
+  tooltipEl.className = 'tooltip';
+  tooltipEl.innerHTML = `${text}<br><button class="tutorial-btn">Next</button>`;
+  document.body.appendChild(tooltipEl);
+
+  // Position tooltip near the button
+  const rect = el.getBoundingClientRect();
+  
+  if (element === '#downloadBtn' || element === '#avatarDisplay') {
+    // Tooltip on left side for download button
+    tooltipEl.style.top = `${rect.top + window.scrollY - 10}px`;
+    tooltipEl.style.left = `${rect.left - 270}px`;  // shift left
+  } else {
+    // Default tooltip position on right side
+    tooltipEl.style.top = `${rect.top + window.scrollY - 60}px`;
+    tooltipEl.style.left = `${rect.left + rect.width + 20}px`;
+  }
+
+  tooltipEl.querySelector('button').addEventListener('click', () => {
+    currentStep++;
+    showStep();
+  });
+
+  // Auto move to next after 5 sec
+  stepTimer = setTimeout(() => {
+    currentStep++;
+    showStep();
+  }, 20000);
+}
+
+// Modal logic
+document.getElementById('tutorialYesBtn').addEventListener('click', startTutorial);
+document.getElementById('tutorialNoBtn').addEventListener('click', () => {
+  document.getElementById('tutorialModal').style.display = 'none';
+});
+</script>
+
+</body>
+</html> 

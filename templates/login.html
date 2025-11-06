@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3DIAL - Login</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='styles.css')}}">
+    <style>
+        body{
+            height: auto;
+            padding: 2rem;
+        }
+        .checkbox{
+            width: fit-content;
+        }
+        .inline {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;         /* ~8px */
+            font-size: 0.8rem; /* ~14px */
+            color: white;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .checkbox {
+            width: 1rem;   /* ~16px */
+            height: 1rem;
+            accent-color: #00fff7;
+            cursor: pointer;
+            border-radius: 0.25rem;
+            box-shadow: 0 0 0.375rem #00fff7aa; /* ~6px */
+            margin: 0;
+        }
+        
+    </style>
+    
+</head>
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div id="flash-container">
+                {% for category, message in messages %}
+                    <div class="alert {{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
+    <div class="container">
+        <h2>Login</h2>
+        <form method="POST" action="/login">
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="password" placeholder="Password" required>
+
+            <!-- CAPTCHA Image with an ID -->
+            <div>
+            <img id="captchaImage" src="/captcha_img" alt="CAPTCHA">
+            <!-- Reload Button -->
+            <button type="button" id="captcha" onclick="reloadCaptcha()" title="Reload">🔁</button><br>
+            </div>
+            <input type="text" name="captcha_input" placeholder="Enter CAPTCHA" required>
+            <div class="inline"><input type="checkbox" name="remember" class="checkbox">Remember Me</div>
+
+            <button type="submit">Login</button>
+        </form>
+        
+        <p>Forgot Password? <a href="/reset_pass">Reset</a></p>
+        <p>Don't have an account? <a href="/reg_page">Register</a></p>
+
+    </div>
+    <script src="{{ url_for('static',filename='script.js')}}"></script>
+
+</body>
+</html>

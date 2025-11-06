@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3DIAL - 3D Avatar for Virtual Presence</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Three.js + Loaders + Controls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <!-- GSAP + ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/ScrollTrigger.min.js"></script>
+
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Orbitron',sans-serif;}
+    body{background:#050505;color:#fff;overflow-x:hidden;}
+    canvas{position:fixed;top:0;left:0;z-index:-1;}
+    header{text-align:center;padding:8rem 2rem;position:relative;z-index:2;}
+    header h1{color:#fff;      font-size:3.5rem;      text-shadow:0 0 5px #00f6ff,0 0 10px #00ff85,0 0 20px #00f6ff;background:linear-gradient(90deg,#00f6ff,#00ff85);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:glow 2s infinite alternate;}
+    @keyframes glow{from{ text-shadow:0 0 10px #00f6ff,0 0 20px #00ff85;}to{ text-shadow:0 0 20px #00ff85,0 0 40px #00f6ff;}}
+    header p{font-size:1.2rem;margin:1rem 0 2rem;color:#aaa;}
+    header button{position:relative;background:#111;border:none;padding:1rem 2.5rem;border-radius:50px;font-size:1.2rem;cursor:pointer;color:#fff;overflow:hidden;z-index:1;transition:box-shadow 0.3s;}
+    header button:hover{box-shadow:0 0 20px #00ff85,0 0 40px #00f6ff;}
+    header button::before{content:"";position:absolute;top:-2px;left:-2px;right:-2px;bottom:-2px;border-radius:50px;padding:2px;background:linear-gradient(270deg,#00f6ff,#00ff85,#ff00ff,#00f6ff);background-size:600% 600%;animation:borderGlow 6s linear infinite;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;}
+    header button:active::after{content:"";position:absolute;width:200%;height:200%;background:rgba(0,255,133,0.3);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);animation:ripple 0.6s linear forwards;}
+    @keyframes ripple{to{transform:translate(-50%,-50%) scale(1);opacity:0;}}
+    @keyframes borderGlow{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+    section.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2rem;padding:4rem 2rem;position:relative;z-index:2;}
+    .feature-card{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:2rem;border-radius:20px;transition:transform 0.3s,box-shadow 0.3s;}
+    .feature-card:hover{transform:translateY(-10px);box-shadow:0 8px 25px rgba(0,255,200,0.3);}
+    .feature-card h3{color:#00f6ff;margin-bottom:1rem;}
+    .feature-card p{color:#ddd;font-size:0.95rem;}
+    .stats{display:flex;justify-content:center;gap:5rem;padding:4rem 2rem;text-align:center;position:relative;z-index:2;}
+    .stat h2{font-size:3rem;color:#00ff85;}
+    .stat p{color:#aaa;margin-top:0.5rem;}
+    .showcase{display:flex;justify-content:center;gap:2rem;padding:4rem 2rem;z-index:2;position:relative;}
+    .showcase .card{width:300px;height:400px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.2);border-radius:20px;display:flex;align-items:center;justify-content:center;transition:transform 0.3s, box-shadow 0.3s;position:relative;}
+    section.team{padding:4rem 2rem;text-align:center;position:relative;z-index:2;}
+    section.team h2{font-size:2.5rem;margin-bottom:2rem;color:#00f6ff;}
+    .team-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2rem;justify-items:center;}
+    .team-member{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);padding:1.5rem;border-radius:20px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);opacity:0;transform:translateY(50px);}
+    .team-member h3{color:#00ff85;margin-bottom:0.5rem;}
+    .team-member p{color:#aaa;font-size:0.95rem;}
+    footer{text-align:center;padding:2rem;background:rgba(255,255,255,0.05);font-size:0.9rem;color:#777;position:relative;z-index:2;}
+  </style>
+</head>
+<body>
+  <canvas id="bg"></canvas>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div id="flash-container">
+                {% for category, message in messages %}
+                    <div class="alert {{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+  <!-- HERO -->
+  <header>
+    <h1>Bring Your Digital Twin to Life</h1>
+    <p>Create stunning 3D avatars, clone your voice, and deliver interactive presentations with our AI-powered Avatar Creator - 3DIAL Virtual Presence.</p>
+    <button onclick="document.location='/login_page'">Get Started</button>
+  </header>
+
+  <!-- FEATURES -->
+  <section class="features">
+  <div class="feature-card"><h3>Realistic 3D Avatars</h3><p>Generate lifelike 3D digital twins from your photos — powered by deep learning and 3D reconstruction.</p></div>
+  <div class="feature-card"><h3>AI Voice Cloning</h3><p>Clone your unique voice with our advanced speech synthesis model, bringing your avatar to life.</p></div>
+  <div class="feature-card"><h3>Interactive AI Assistant</h3><p>Engage in real-time conversation with your avatar using our intelligent chatbot integration.</p></div>
+  <div class="feature-card"><h3>Seamless User Experience</h3><p>Modern web interface, authentication, and one-click access for creating and downloading your AI avatars.</p></div>
+</section>
+
+
+  <!-- FEATURES / VISUAL PRODUCT STEPS -->
+<!-- FEATURES / VISUAL PRODUCT STEPS -->
+<section class="features" style="display:flex;justify-content:center;align-items:center;gap:2rem;flex-wrap:wrap;">
+
+  <!-- Step 1: Upload Images -->
+  <div class="feature-card" style="position:relative; flex:1; min-width:250px; text-align:center; height: 100%;">
+    <img src="{{ url_for('static', filename='multi-angle-icon.png') }}" alt="Upload Images" style="width:80px;margin-bottom:1rem;">
+    <h3>Step 1: Upload Images</h3>
+    <p>Provide multiple face images from different angles to start creating your avatar.</p>
+    <!-- Right arrow -->
+    <img src="{{ url_for('static', filename='arrow-right.png') }}" alt="Next" style="position:absolute;top:50%;right:-40px;width:40px;height:auto;">
+  </div>
+
+  <!-- Step 2: AI Processing -->
+  <div class="feature-card" style="position:relative; flex:1; min-width:250px; text-align:center; height: 100%;">
+    <img src="{{ url_for('static', filename='processing-icon.png') }}" alt="AI Processing" style="width:80px;margin-bottom:1rem;">
+    <h3>Step 2: AI Magic</h3>
+    <p>AI reconstructs your 3D avatar, animates expressions, and clones your voice seamlessly.</p>
+    <!-- Right arrow -->
+    <img src="{{ url_for('static', filename='arrow-right.png') }}" alt="Next" style="position:absolute;top:50%;right:-40px;width:40px;height:auto;">
+  </div>
+
+  <!-- Step 3: Get Outputs -->
+  <div class="feature-card" style="flex:1; min-width:250px; text-align:center; height: 100%;">
+  <img src="{{ url_for('static', filename='output-icon.png') }}" alt="Get Outputs" style="width:70px;margin-bottom:0.8rem;">
+  <h3>Step 3: Get Outputs</h3>
+  <p style="margin-bottom:0.8rem;">Download your creations:</p>
+
+  <div style="display:flex; justify-content:center; gap:0.8rem; flex-wrap:wrap;">
+    <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);
+                padding:0.6rem 0.8rem;border-radius:12px;width:auto;text-align:center;">
+      <img src="{{ url_for('static', filename='avatar-video-icon.png') }}" alt="Avatar Video" style="width:40px;margin-bottom:0.4rem;">
+      <p style="font-size:0.75rem;color:#ddd;margin:0;">Animation</p>
+    </div>
+
+    <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);
+                padding:0.6rem 0.8rem;border-radius:12px;width:auto;text-align:center;">
+      <img src="{{ url_for('static', filename='voice-icon.png') }}" alt="Cloned Voice" style="width:40px;margin-bottom:0.4rem;">
+      <p style="font-size:0.75rem;color:#ddd;margin:0;">Voice Clone</p>
+    </div>
+
+    <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);
+                padding:0.6rem 0.8rem;border-radius:12px;width:auto;text-align:center;">
+      <img src="{{ url_for('static', filename='download-icon.png') }}" alt="3D Avatar" style="width:40px;margin-bottom:0.4rem;">
+      <p style="font-size:0.75rem;color:#ddd;margin:0;">3D Avatar</p>
+    </div>
+  </div>
+</div>
+
+
+</section>
+
+
+
+  <!-- STATS -->
+  <section class="stats">
+  <div class="stat"><h2 class="counter" data-target="200">0</h2><p>Avatars Generated</p></div>
+  <div class="stat"><h2 class="counter" data-target="50">0</h2><p>Voices Cloned</p></div>
+  <div class="stat"><h2 class="counter" data-target="4">0</h2><p>Innovators Behind 3DIAL</p></div>
+</section>
+
+
+  <!-- SHOWCASE -->
+  <section class="showcase">
+    <div class="card" id="avatar1">
+    <model-viewer src="{{ url_for('static', filename='avatar1.glb') }}" alt="Avatar 1" camera-controls auto-rotate="false" exposure="1"></model-viewer>
+   </div>
+    <div class="card" id="avatar2"><model-viewer src="{{ url_for('static', filename='avatar2.glb') }}" alt="Avatar 2" camera-controls auto-rotate="false" exposure="1"></model-viewer>
+    </div>
+    <div class="card" id="avatar3"><model-viewer src="{{ url_for('static', filename='avatar2.glb') }}" alt="Avatar 3" camera-controls auto-rotate="false" exposure="1"></model-viewer>
+  </div>
+  </section>
+
+  <!-- TEAM -->
+  <section class="team">
+  <h2>Meet the Innovators Behind 3DIAL</h2>
+  <div class="team-grid">
+    
+    <div class="team-member">
+      <h3>Aarya</h3>
+      <p><b>Design Lead & Avatar Sculptor</b><br><br>
+      Designed the futuristic landing page and developed the avatar creation module with seamless 3D rendering.</p>
+    </div>
+    <div class="team-member">
+      <h3>Eshita</h3>
+      <p><b>Integration Architect & Voice Visionary</b><br><br>
+      Engineered the complete web platform — from UI, authentication, and chatbot integration to voice cloning and Wav2Lip-based video generation.</p>
+    </div>
+
+
+    <div class="team-member">
+      <h3>Ardra</h3>
+      <p><b>Voice Alchemist & Technical Orchestrator</b><br><br>
+      Crafted the voice cloning and synchronization pipeline, ensuring smooth integration of speech with lip movement.</p>
+    </div>
+
+    <div class="team-member">
+      <h3>Tanaya</h3>
+      <p><b>3D Artist & Animation Engineer</b><br><br>
+      Worked on avatar design and Wav2Lip animation, enhancing realism and visual flow of generated avatars.</p>
+    </div>
+  </div>
+</section>
+
+
+  <footer>© 2025 Avatar Creator | Designed with ⚡ Futuristic Tech</footer>
+
+  <script>
+  // ========== THREE.JS BACKGROUND ========== 
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer({canvas: document.getElementById('bg'), antialias:true});
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  camera.position.z = 5;
+
+  const particlesGeometry = new THREE.BufferGeometry();
+  const particlesCount = 1200;
+  const posArray = new Float32Array(particlesCount*3);
+  for(let i=0;i<particlesCount*3;i++){posArray[i]=(Math.random()-0.5)*12;}
+  particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray,3));
+  const particlesMaterial = new THREE.PointsMaterial({color:0x00f6ff,size:0.02});
+  const particlesMesh = new THREE.Points(particlesGeometry,particlesMaterial);
+  scene.add(particlesMesh);
+
+  const sphereGeometry = new THREE.SphereGeometry(2,32,32);
+  const wireframe = new THREE.WireframeGeometry(sphereGeometry);
+  const sphere = new THREE.LineSegments(wireframe,new THREE.LineBasicMaterial({color:0x00ff85}));
+  scene.add(sphere);
+
+  function animate() {
+    requestAnimationFrame(animate);
+    particlesMesh.rotation.y+=0.001;
+    particlesMesh.rotation.x+=0.0005;
+    sphere.rotation.y+=0.002;
+    renderer.render(scene,camera);
+  }
+  animate();
+  window.addEventListener('resize',()=>{camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);});
+  window.addEventListener('scroll',()=>{const scrollY=window.scrollY;particlesMesh.position.z=scrollY*-0.002;sphere.position.z=scrollY*-0.0015;});
+
+  // ========== GSAP ANIMATIONS ==========
+  gsap.from("header h1",{duration:1.5,y:-50,opacity:0,ease:"power2.out"});
+  gsap.from("header p",{duration:1.5,delay:0.3,y:50,opacity:0,ease:"power2.out"});
+  gsap.from("header button",{duration:1.5,delay:0.6,scale:0,opacity:0,ease:"back.out(1.7)"});
+  gsap.utils.toArray(".feature-card").forEach((card,i)=>{gsap.from(card,{scrollTrigger:{trigger:card,start:"top 80%"},duration:1,y:50,opacity:0,delay:i*0.2,ease:"power2.out"});});
+  const counters=document.querySelectorAll('.counter');
+  counters.forEach(counter=>{
+    const updateCount=()=>{
+      const target=+counter.getAttribute('data-target');
+      const count=+counter.innerText.replace(/,/g,'');
+      const increment=target/200;
+      if(count<target){counter.innerText=Math.ceil(count+increment).toLocaleString();requestAnimationFrame(updateCount);}
+      else{counter.innerText=target.toLocaleString();}
+    };
+    ScrollTrigger.create({trigger:counter,start:"top 80%",onEnter:updateCount});
+  });
+  gsap.utils.toArray(".showcase .card").forEach((card,i)=>{gsap.from(card,{scrollTrigger:{trigger:card,start:"top 90%"},y:50,opacity:0,duration:1,delay:i*0.2,ease:"power2.out"});});
+
+  // Animate team members
+  gsap.utils.toArray(".team-member").forEach((member,i)=>{
+    gsap.to(member,{scrollTrigger:{trigger:member,start:"top 85%"},opacity:1,y:0,duration:1,delay:i*0.2,ease:"power2.out"});
+  });
+
+  // ========== LOAD AVATARS ==========
+  const avatars = [
+    {id:"avatar1", file:"avatar1.glb"},
+    {id:"avatar2", file:"avatar2.glb"},
+    {id:"avatar3", file:"avatar3.glb"}
+  ];
+
+  avatars.forEach(a=>{
+    const container = document.getElementById(a.id);
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(45, container.clientWidth/container.clientHeight,0.1,1000);
+    camera.position.set(0,1.2,2);
+
+    const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setClearColor(0x000000,0);
+    container.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableZoom = true;
+    controls.enablePan = false;
+    controls.autoRotate = false; // ✅ stable avatars
+
+    const hemiLight = new THREE.HemisphereLight(0xffffff,0x444444,1.2);
+    hemiLight.position.set(0,1,0);
+    scene.add(hemiLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff,0.8);
+    dirLight.position.set(2,2,2);
+    scene.add(dirLight);
+
+    const loader = new THREE.GLTFLoader();
+    loader.load(a.file, gltf=>{
+      const avatar = gltf.scene;
+      avatar.scale.set(1.5,1.5,1.5);
+      avatar.position.y = -0.8;
+      scene.add(avatar);
+
+      function animateAvatar(){
+        requestAnimationFrame(animateAvatar);
+        controls.update();
+        renderer.render(scene,camera);
+      }
+      animateAvatar();
+    });  // python -m http.server 8000 http://localhost:8000/
+
+    window.addEventListener('resize',()=>{
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+    });
+  });
+  </script>
+</body>
+</html>
