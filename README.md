@@ -1,5 +1,4 @@
-
-  <h1>🕶️ 3DIAL – 3D Avatar for Virtual Presence</h1>
+<h1 align="center"> 3DIAL – 3D Avatar for Virtual Presence</h1>
   <p>
     <strong>3DIAL</strong> is an AI-powered web application for creating realistic, interactive 3D avatars with cloned human voices, natural lip-sync, and intelligent AI assistance. It enables anyone to have a personal, expressive digital presence for presentations, communication, and accessibility.
   </p>
