@@ -112,6 +112,9 @@
     <li>Flask Documentation <a href="https://flask.palletsprojects.com/en/2.3.x/">[5]</a></li>
   </ul>
 
+  Note - <br>
+This repository contains the implementation and integration logic for the 3DIAL system. External models and datasets (Ready Player Me, Wav2Lip, Real-Time Voice Cloning, Gemini AI) are referenced but not included due to license and size limitations.
+
   <h2>Team</h2>
     <ul>
         <li> <a href="https://github.com/Eshita-Badhe">Eshita-Badhe</a></li>
