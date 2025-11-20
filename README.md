@@ -124,9 +124,9 @@ This repository contains the implementation and integration logic for the 3DIAL 
     
   <h2>Contact</h2>
   <ul>
-    <li><strong>Name:</strong> Eshita Badhe</li>
-    <li><strong>Email:</strong> sge.eshita31gb@gmail.com</li>
-    <li><strong>GitHub:</strong> <a href="https://github.com/Eshita-Badhe">Aarya-Chaudhari</a></li>
+    <li><strong>Name:</strong> Aarya Chaudhari</li>
+    <li><strong>Email:</strong> aaryachaujdari0508@gmail.com</li>
+    <li><strong>GitHub:</strong> <a href="https://github.com/Aarya-Chaudhari">Aarya-Chaudhari</a></li>
   </ul>
 
   <p><strong>License:</strong> MIT</p>
