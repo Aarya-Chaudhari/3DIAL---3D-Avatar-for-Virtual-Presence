@@ -126,7 +126,7 @@ This repository contains the implementation and integration logic for the 3DIAL 
   <ul>
     <li><strong>Name:</strong> Eshita Badhe</li>
     <li><strong>Email:</strong> sge.eshita31gb@gmail.com</li>
-    <li><strong>GitHub:</strong> <a href="https://github.com/Eshita-Badhe">Eshita-Badhe</a></li>
+    <li><strong>GitHub:</strong> <a href="https://github.com/Eshita-Badhe">Aarya-Chaudhari</a></li>
   </ul>
 
   <p><strong>License:</strong> MIT</p>
